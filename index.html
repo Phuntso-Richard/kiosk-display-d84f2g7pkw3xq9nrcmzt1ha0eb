@@ -1,19 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Test Kiosk</title>
+  <meta name="apple-mobile-web-app-title" content="Weather App" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Weather Background</title>
   <style>
     html, body {
-      margin: 0; padding: 0; height: 100vh; overflow: hidden;
-      display: flex; justify-content: center; align-items: center;
-      background: #000; color: #fff; font-size: 5vw; font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: black;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    .wrapper {
+      width: 2266px;
+      height: 1488px;
+      background: url('bg.png') no-repeat center center;
+      background-size: contain;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
   </style>
 </head>
 <body>
-  <div>Standalone Mode Test</div>
+  <div class="wrapper"></div>
 </body>
 </html>
