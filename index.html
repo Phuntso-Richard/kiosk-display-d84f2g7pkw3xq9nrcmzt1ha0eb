@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Weather App" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Exact 1:1 Retina Image</title>
+  <title>Weather Display</title>
   <style>
     html, body {
       margin: 0;
@@ -20,13 +20,57 @@
       align-items: center;
     }
 
-    img {
-      width: 1133px; /* 2266 ÷ 2 */
-      height: 744px;  /* 1488 ÷ 2 */
+    .wrapper {
+      position: relative;
+      width: 1133px;
+      height: 744px;
     }
+
+    .wrapper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .field {
+      position: absolute;
+      color: white;
+      font-family: sans-serif;
+      font-size: 45px;
+      text-shadow: 0 0 5px black;
+      /* outline: 1px dashed lime; */ /* Use this to debug placement */
+    }
+
+    /* Adjust these to match your image layout */
+    .datetime   { top: 68px;  left: 760px; }
+    .weather    { top: 108px; left: 760px; }
+    .uv         { top: 148px; left: 900px; }
+    .wind       { top: 188px; left: 838px; }
+    .temp       { top: 68px; left: 430px; }
+    .humidity   { top: 108px; left: 430px; }
+    .pm25       { top: 148px; left: 477px; }
+    .rainfall   { top: 188px; left: 503px; }
+    
   </style>
 </head>
 <body>
-  <img src="bg.png" width="2266" height="1488" alt="Weather Background">
+  <div class="wrapper">
+    <img src="bg.png" alt="Weather Background" id="bg-image">
+
+    <div class="field datetime">2025-07-12 14:00</div>
+    <div class="field temp">28°C</div>
+    <div class="field humidity">65%</div>
+    <div class="field weather">Cloudy</div>
+    <div class="field pm25">PM2.5: 18 µg/m³</div>
+    <div class="field uv">UV Index: 6</div>
+    <div class="field rainfall">Rain: 0 mm</div>
+    <div class="field wind">Wind: NE 15 km/h</div>
+  </div>
+
+  <script>
+    // You can dynamically update these fields later using JavaScript
+    // Example:
+    // document.querySelector('.temp').innerText = "30°C";
+  </script>
 </body>
 </html>
