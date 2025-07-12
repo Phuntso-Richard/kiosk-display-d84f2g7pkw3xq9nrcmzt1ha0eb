@@ -70,50 +70,43 @@
 <script>
 function formatDateTime(date) {
   const pad = n => n.toString().padStart(2, '0');
-
-  const day = pad(date.getDate());
-  const month = pad(date.getMonth() + 1);
-  const year = date.getFullYear();
-  const hour = pad(date.getHours());
-  const minute = pad(date.getMinutes());
-  const second = pad(date.getSeconds());
-
-  return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
+  const day = pad(date.getDate()), month = pad(date.getMonth()+1), year = date.getFullYear();
+  const hour = pad(date.getHours()), min = pad(date.getMinutes()), sec = pad(date.getSeconds());
+  return `${day}/${month}/${year} ${hour}:${min}:${sec}`;
 }
 
 function updateClock() {
-  const now = new Date();
-  document.querySelector('.datetime').innerText = formatDateTime(now);
+  document.querySelector('.datetime').innerText = formatDateTime(new Date());
 }
-
-// Start ticking
 updateClock();
 setInterval(updateClock, 1000);
 
-// Get temperature from data.gov.sg V2 real-time API
 fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
   .then(res => res.json())
   .then(data => {
-    const readings = data.items?.[0]?.readings || [];
+    console.log('Full API response:', data);
+    const items = data.items;
+    if (!items || items.length === 0) throw new Error('No items');
 
-    // Look for S109 first
+    const readings = items[0].readings;
+    console.log('Readings:', readings);
+
     let reading = readings.find(r => r.station_id === 'S109');
 
-    // If not found, use the first available reading
-    if (!reading && readings.length > 0) {
+    if (!reading) {
+      console.warn('S109 not found, using fallback.');
       reading = readings[0];
     }
 
-    // Display value if available
     if (reading) {
-      const value = reading.value;
-      document.querySelector('.temp').innerText = `${value}°C`;
+      console.log('Using reading:', reading);
+      document.querySelector('.temp').innerText = `${reading.value}°C`;
     } else {
       document.querySelector('.temp').innerText = 'N/A';
     }
   })
   .catch(err => {
-    console.error('Failed to fetch temperature:', err);
+    console.error('Error fetching temperature:', err);
     document.querySelector('.temp').innerText = 'Error';
   });
 </script>
