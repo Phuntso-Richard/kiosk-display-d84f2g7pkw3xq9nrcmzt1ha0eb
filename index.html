@@ -43,7 +43,8 @@
 
     /* Adjust these to match your image layout */
     .datetime   { top: 65px;  left: 758px; }
-    .weather    { top: 111px; left: 758px; }
+    .thermo     { top: 111px; left: 760px; }
+    .weather    { top: 111px; left: 777px; }
     .uv         { top: 157px; left: 758px; }
     .wind       { top: 203px; left: 758px; }
     .temp       { top: 62px; left: 389px; }
@@ -71,6 +72,7 @@
     <div class="field temp"></div>
     <div class="field humidity"></div>
     <div class="field weather"></div>
+    <div class="field thermo">🌡</div>
     <div class="field pm25">PM<sub>2.5</sub>: 18 µg/m³</div>
     <div class="field uv">UV Index: 6</div>
     <div class="field rainfall">Rainfall: 0 mm</div>
@@ -100,7 +102,7 @@ function updateWeather() {
     .then(data => {
       var readings = data?.data?.readings?.[0]?.data || [];
       var selected = readings.find(r => r.stationId === 'S109') || readings[0];
-      document.querySelector('.temp').innerText = '🌡️  ' + selected?.value + '°C' || 'N/A';
+      document.querySelector('.temp').innerText = selected?.value + '°C' || 'N/A';
     })
     .catch(err => {
       console.error('Air temp error:', err);
