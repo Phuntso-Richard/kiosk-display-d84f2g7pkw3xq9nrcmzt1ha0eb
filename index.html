@@ -126,35 +126,6 @@ function updateWeather() {
       document.querySelector('.temp').innerText = 'Error';
     });
 
-// --- Fetch air temperature ---
-  fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-      var readings = data?.data?.readings?.[0]?.data || [];
-      var selected = null;
-
-      for (var i = 0; i < readings.length; i++) {
-        if (readings[i].stationId === 'S109') {
-          selected = readings[i];
-          break;
-        }
-      }
-
-      if (!selected && readings.length > 0) {
-        selected = readings[0];
-      }
-
-      if (selected) {
-        document.querySelector('.temp').innerText = selected.value + '°C';
-      } else {
-        document.querySelector('.temp').innerText = 'N/A';
-      }
-    })
-    .catch(function (err) {
-      console.error('Air temp error:', err);
-      document.querySelector('.temp').innerText = 'Error';
-    });
-
   // --- Fetch relative humidity ---
   fetch('https://api-open.data.gov.sg/v2/real-time/api/relative-humidity')
     .then(function (res) { return res.json(); })
