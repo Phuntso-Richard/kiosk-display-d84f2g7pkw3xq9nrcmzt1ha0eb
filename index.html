@@ -44,12 +44,12 @@
     /* Adjust these to match your image layout */
     .datetime   { top: 65px;  left: 758px; }
     .weather    { top: 111px; left: 758px; }
-    .uv         { top: 157px; left: 895px; }
+    .uv         { top: 157px; left: 894px; }
     .wind       { top: 203px; left: 840px; }
     .temp       { top: 65px; left: 430px; }
     .humidity   { top: 111px; left: 430px; }
     .pm25       { top: 157px; left: 459px; }
-    .rainfall   { top: 203px; left: 501px; }
+    .rainfall   { top: 203px; left: 500px; }
     
   </style>
 </head>
@@ -68,9 +68,8 @@
   </div>
 
   <script>
-    // You can dynamically update these fields later using JavaScript
-    // Example:
-    // document.querySelector('.temp').innerText = "30°C";
+const now = new Date();
+document.querySelector('.datetime').innerText = now.toLocaleString();
   </script>
 </body>
 </html>
