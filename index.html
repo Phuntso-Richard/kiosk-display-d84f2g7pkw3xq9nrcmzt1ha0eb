@@ -83,7 +83,6 @@ setInterval(updateClock, 1000);
 
 // 🔁 This function handles all weather fetching (air temp for now)
 function updateWeather() {
-function updateWeather() {
   // --- Fetch air temperature ---
   fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
     .then(res => res.json())
