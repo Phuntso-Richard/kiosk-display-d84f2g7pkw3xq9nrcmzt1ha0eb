@@ -67,7 +67,7 @@
     <div class="field wind">NE 15 km/h</div>
   </div>
 
-  <script>
+<script>
 function formatDateTime(date) {
   const pad = n => n.toString().padStart(2, '0');
 
@@ -89,6 +89,33 @@ function updateClock() {
 // Start ticking
 updateClock();
 setInterval(updateClock, 1000);
+
+// Get temperature from data.gov.sg V2 real-time API
+fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
+  .then(res => res.json())
+  .then(data => {
+    const readings = data.items?.[0]?.readings || [];
+
+    // Look for S109 first
+    let reading = readings.find(r => r.station_id === 'S109');
+
+    // If not found, use the first available reading
+    if (!reading && readings.length > 0) {
+      reading = readings[0];
+    }
+
+    // Display value if available
+    if (reading) {
+      const value = reading.value;
+      document.querySelector('.temp').innerText = `${value}°C`;
+    } else {
+      document.querySelector('.temp').innerText = 'N/A';
+    }
+  })
+  .catch(err => {
+    console.error('Failed to fetch temperature:', err);
+    document.querySelector('.temp').innerText = 'Error';
+  });
 </script>
 </body>
 </html>
