@@ -82,59 +82,45 @@ updateClock();
 setInterval(updateClock, 1000);
 
 fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
-  .then(function(res) {
+  .then(function (res) {
     return res.json();
   })
-  .then(function(data) {
-    console.log('Fetched data:', data);
-
-    // Basic safety check
-    if (!data || typeof data !== 'object') {
-      console.log('Invalid data object');
+  .then(function (data) {
+    if (
+      !data ||
+      typeof data !== 'object' ||
+      !data.data ||
+      !Array.isArray(data.data.readings) ||
+      data.data.readings.length === 0 ||
+      !Array.isArray(data.data.readings[0].data)
+    ) {
+      console.log('Invalid structure');
       document.querySelector('.temp').innerText = 'N/A';
       return;
     }
 
-    if (!data.items || !Array.isArray(data.items)) {
-      console.log('No items array');
-      document.querySelector('.temp').innerText = 'N/A';
-      return;
-    }
-
-    var items = data.items;
-    if (items.length === 0 || !items[0] || !Array.isArray(items[0].data)) {
-      console.log('Empty items or missing data field');
-      document.querySelector('.temp').innerText = 'N/A';
-      return;
-    }
-
-    var readings = items[0].data;
+    var readings = data.data.readings[0].data;
     var selected = null;
 
     for (var i = 0; i < readings.length; i++) {
-      var r = readings[i];
-      console.log('Checking station', r.station_id, 'with value', r.value);
-      if (r.station_id === 'S109') {
-        selected = r;
+      if (readings[i].stationId === 'S109') {
+        selected = readings[i];
         break;
       }
     }
 
-    // Fallback
     if (!selected && readings.length > 0) {
-      console.log('S109 not found, using fallback');
       selected = readings[0];
     }
 
     if (selected) {
       document.querySelector('.temp').innerText = selected.value + '°C';
     } else {
-      console.log('Still nothing found');
       document.querySelector('.temp').innerText = 'N/A';
     }
   })
-  .catch(function(err) {
-    console.log('Fetch error:', err);
+  .catch(function (err) {
+    console.error('Error fetching temperature:', err);
     document.querySelector('.temp').innerText = 'Error';
   });
 </script>
