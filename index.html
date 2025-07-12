@@ -44,12 +44,12 @@
     /* Adjust these to match your image layout */
     .datetime   { top: 65px;  left: 758px; }
     .weather    { top: 111px; left: 758px; }
-    .uv         { top: 157px; left: 894px; }
-    .wind       { top: 203px; left: 840px; }
-    .temp       { top: 65px; left: 430px; }
-    .humidity   { top: 111px; left: 430px; }
+    .uv         { top: 157px; left: 758px; }
+    .wind       { top: 203px; left: 758px; }
+    .temp       { top: 65px; left: 388px; }
+    .humidity   { top: 111px; left: 388px; }
     .pm25       { top: 157px; left: 459px; }
-    .rainfall   { top: 203px; left: 500px; }
+    .rainfall   { top: 203px; left: 388px; }
     
   </style>
 </head>
@@ -57,14 +57,14 @@
   <div class="wrapper">
     <img src="bg.png" alt="Weather Background" id="bg-image">
 
-    <div class="field datetime">2025-07-12 14:00</div>
-    <div class="field temp">28°C</div>
-    <div class="field humidity">65%</div>
+    /* <div class="field datetime">2025-07-12 14:00</div> */
+    /* <div class="field temp">28°C</div> */
+    <div class="field humidity">💧 65%</div>
     <div class="field weather">Cloudy</div>
     <div class="field pm25">18 µg/m³</div>
-    <div class="field uv">6</div>
-    <div class="field rainfall">0 mm</div>
-    <div class="field wind">NE 15 km/h</div>
+    <div class="field uv">UV Index: 6</div>
+    <div class="field rainfall">Rainfall: 0 mm</div>
+    <div class="field wind">Wind: NE 15 km/h</div>
   </div>
 
 <script>
@@ -114,7 +114,7 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
     }
 
     if (selected) {
-      document.querySelector('.temp').innerText = selected.value + '°C';
+      document.querySelector('.temp').innerText = '🌡 ' + selected.value + '°C';
     } else {
       document.querySelector('.temp').innerText = 'N/A';
     }
