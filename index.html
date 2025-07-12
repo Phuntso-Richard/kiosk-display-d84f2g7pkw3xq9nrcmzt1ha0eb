@@ -50,6 +50,12 @@
     .humidity   { top: 107px; left: 388px; }
     .pm25       { top: 157px; left: 388px; }
     .rainfall   { top: 203px; left: 388px; }
+    .weather-emoji   { top: 203px; left: 388px; }
+
+.field {
+     font-size: 75px; 
+    }
+.weather-emoji   { top: 55px; left: 55px; }
     
   </style>
 </head>
@@ -65,6 +71,7 @@
     <div class="field uv">UV Index: 6</div>
     <div class="field rainfall">Rainfall: 0 mm</div>
     <div class="field wind">Wind: NE 15 km/h</div>
+    <div class="field weather-emoji"></div>
   </div>
 
 <script>
@@ -89,7 +96,7 @@ function updateWeather() {
     .then(data => {
       var readings = data?.data?.readings?.[0]?.data || [];
       var selected = readings.find(r => r.stationId === 'S109') || readings[0];
-      document.querySelector('.temp').innerText = selected?.value + '°C' || 'N/A';
+      document.querySelector('.temp').innerText = '🌡️ ' + selected?.value + '°C' || 'N/A';
     })
     .catch(err => {
       console.error('Air temp error:', err);
@@ -102,7 +109,7 @@ function updateWeather() {
     .then(data => {
       var readings = data?.data?.readings?.[0]?.data || [];
       var selected = readings.find(r => r.stationId === 'S109') || readings[0];
-      document.querySelector('.humidity').innerText = selected?.value + '%' || 'N/A';
+      document.querySelector('.humidity').innerText = '💧 ' + selected?.value + '%' || 'N/A';
     })
     .catch(err => {
       console.error('Humidity error:', err);
@@ -110,19 +117,55 @@ function updateWeather() {
     });
 
   // --- Fetch weather forecast ---
-  fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
-    .then(res => res.json())
-    .then(data => {
-      var forecasts = data?.data?.items?.[0]?.forecasts || [];
-      var selected = forecasts.find(f => f.area === 'Punggol') || forecasts[0];
-      document.querySelector('.weather').innerText = selected?.forecast || 'N/A';
-    })
-    .catch(err => {
-      console.error('Forecast error:', err);
-      document.querySelector('.weather').innerText = 'Error';
-    });
+fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
+  .then(res => res.json())
+  .then(data => {
+    var forecasts = data?.data?.items?.[0]?.forecasts || [];
+    var selected = forecasts.find(f => f.area === 'Punggol') || forecasts[0];
+    var rawForecast = selected?.forecast || 'N/A';
+    var cleaned = rawForecast.replace(' with Gusty Winds', '').trim();
+
+    document.querySelector('.weather').innerText = cleaned;
+    document.querySelector('.weather-emoji').innerText = getWeatherEmoji(rawForecast);
+  })
+  .catch(err => {
+    console.error('Forecast error:', err);
+    document.querySelector('.weather').innerText = 'Error';
+    document.querySelector('.weather-emoji').innerText = '❌';
+  });
 }
 
+function getWeatherEmoji(forecast) {
+  const cleaned = forecast.replace(' with Gusty Winds', '').trim();
+
+  const emojiMap = {
+    'Fair': '🌤️',
+    'Fair (Day)': '☀️',
+    'Fair (Night)': '🌙',
+    'Fair and Warm': '🔆',
+    'Partly Cloudy': '🌤️',
+    'Partly Cloudy (Day)': '🌤️',
+    'Partly Cloudy (Night)': '☁️',
+    'Cloudy': '☁️',
+    'Hazy': '🌫️',
+    'Slightly Hazy': '🌫️',
+    'Windy': '🌬️',
+    'Mist': '🌁',
+    'Fog': '🌁',
+    'Light Rain': '🌦️',
+    'Moderate Rain': '🌧️',
+    'Heavy Rain': '🌧️',
+    'Passing Showers': '🌦️',
+    'Light Showers': '🌦️',
+    'Showers': '🌧️',
+    'Heavy Showers': '🌧️',
+    'Thundery Showers': '⛈️',
+    'Heavy Thundery Showers': '⛈️'
+  };
+
+  return emojiMap[cleaned] || '❓';
+}
+  
 // Call once at page load
 updateWeather();
 
