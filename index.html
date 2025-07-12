@@ -83,78 +83,46 @@ setInterval(updateClock, 1000);
 
 // 🔁 This function handles all weather fetching (air temp for now)
 function updateWeather() {
+function updateWeather() {
+  // --- Fetch air temperature ---
   fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
-    .then(function (res) {
-      return res.json();
+    .then(res => res.json())
+    .then(data => {
+      var readings = data?.data?.readings?.[0]?.data || [];
+      var selected = readings.find(r => r.stationId === 'S109') || readings[0];
+      document.querySelector('.temp').innerText = selected?.value + '°C' || 'N/A';
     })
-    .then(function (data) {
-      if (
-        !data ||
-        typeof data !== 'object' ||
-        !data.data ||
-        !Array.isArray(data.data.readings) ||
-        data.data.readings.length === 0 ||
-        !Array.isArray(data.data.readings[0].data)
-      ) {
-        console.log('Invalid air temp structure');
-        document.querySelector('.temp').innerText = 'N/A';
-        return;
-      }
-
-      var readings = data.data.readings[0].data;
-      var selected = null;
-
-      for (var i = 0; i < readings.length; i++) {
-        if (readings[i].stationId === 'S109') {
-          selected = readings[i];
-          break;
-        }
-      }
-
-      if (!selected && readings.length > 0) {
-        selected = readings[0];
-      }
-
-      if (selected) {
-        document.querySelector('.temp').innerText = '🌡️ ' + selected.value + '°C';
-      } else {
-        document.querySelector('.temp').innerText = 'N/A';
-      }
-    })
-    .catch(function (err) {
-      console.error('Error fetching air temperature:', err);
+    .catch(err => {
+      console.error('Air temp error:', err);
       document.querySelector('.temp').innerText = 'Error';
     });
 
   // --- Fetch relative humidity ---
   fetch('https://api-open.data.gov.sg/v2/real-time/api/relative-humidity')
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
+    .then(res => res.json())
+    .then(data => {
       var readings = data?.data?.readings?.[0]?.data || [];
-      var selected = null;
-
-      for (var i = 0; i < readings.length; i++) {
-        if (readings[i].stationId === 'S109') {
-          selected = readings[i];
-          break;
-        }
-      }
-
-      if (!selected && readings.length > 0) {
-        selected = readings[0];
-      }
-
-      if (selected) {
-        document.querySelector('.humidity').innerText = '💧 ' + selected.value + '%';
-      } else {
-        document.querySelector('.humidity').innerText = 'N/A';
-      }
+      var selected = readings.find(r => r.stationId === 'S109') || readings[0];
+      document.querySelector('.humidity').innerText = selected?.value + '%' || 'N/A';
     })
-    .catch(function (err) {
+    .catch(err => {
       console.error('Humidity error:', err);
       document.querySelector('.humidity').innerText = 'Error';
     });
-  
+
+  // --- Fetch weather forecast ---
+  fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
+    .then(res => res.json())
+    .then(data => {
+      var forecasts = data?.data?.items?.[0]?.forecasts || [];
+      var selected = forecasts.find(f => f.area === 'Punggol') || forecasts[0];
+      document.querySelector('.weather').innerText = selected?.forecast || 'N/A';
+    })
+    .catch(err => {
+      console.error('Forecast error:', err);
+      document.querySelector('.weather').innerText = 'Error';
+    });
+}
 }
 
 // Call once at page load
