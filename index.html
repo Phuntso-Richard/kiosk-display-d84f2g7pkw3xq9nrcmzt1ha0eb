@@ -46,8 +46,8 @@
     .weather    { top: 111px; left: 758px; }
     .uv         { top: 157px; left: 758px; }
     .wind       { top: 203px; left: 758px; }
-    .temp       { top: 65px; left: 388px; }
-    .humidity   { top: 107px; left: 388px; }
+    .temp       { top: 62px; left: 389px; }
+    .humidity   { top: 106px; left: 388px; }
     .pm25       { top: 157px; left: 388px; }
     .rainfall   { top: 203px; left: 388px; }
 
@@ -100,7 +100,7 @@ function updateWeather() {
     .then(data => {
       var readings = data?.data?.readings?.[0]?.data || [];
       var selected = readings.find(r => r.stationId === 'S109') || readings[0];
-      document.querySelector('.temp').innerText = '🌡️ ' + selected?.value + '°C' || 'N/A';
+      document.querySelector('.temp').innerText = '🌡️  ' + selected?.value + '°C' || 'N/A';
     })
     .catch(err => {
       console.error('Air temp error:', err);
