@@ -21,7 +21,7 @@
       justify-content: center;
       align-items: center;
       -webkit-overflow-scrolling: auto;
-      overscroll-behavior-y: contain; /* Prevent pull-to-refresh on supported browsers */
+      overscroll-behavior-y: contain;
       touch-action: manipulation;
     }
   </style>
@@ -52,6 +52,19 @@
     window.addEventListener('gesturestart', e => e.preventDefault());
     window.addEventListener('gesturechange', e => e.preventDefault());
     window.addEventListener('gestureend', e => e.preventDefault());
+
+    // More aggressive pinch zoom prevention by blocking multi-touch
+    document.addEventListener('touchstart', function (e) {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function (e) {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   </script>
 </body>
 </html>
