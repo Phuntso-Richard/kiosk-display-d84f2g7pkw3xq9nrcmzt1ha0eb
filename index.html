@@ -81,48 +81,57 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
-  .then(function (res) {
-    return res.json();
-  })
-  .then(function (data) {
-    if (
-      !data ||
-      typeof data !== 'object' ||
-      !data.data ||
-      !Array.isArray(data.data.readings) ||
-      data.data.readings.length === 0 ||
-      !Array.isArray(data.data.readings[0].data)
-    ) {
-      console.log('Invalid structure');
-      document.querySelector('.temp').innerText = 'N/A';
-      return;
-    }
-
-    var readings = data.data.readings[0].data;
-    var selected = null;
-
-    for (var i = 0; i < readings.length; i++) {
-      if (readings[i].stationId === 'S109') {
-        selected = readings[i];
-        break;
+// 🔁 This function handles all weather fetching (air temp for now)
+function updateWeather() {
+  fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (data) {
+      if (
+        !data ||
+        typeof data !== 'object' ||
+        !data.data ||
+        !Array.isArray(data.data.readings) ||
+        data.data.readings.length === 0 ||
+        !Array.isArray(data.data.readings[0].data)
+      ) {
+        console.log('Invalid air temp structure');
+        document.querySelector('.temp').innerText = 'N/A';
+        return;
       }
-    }
 
-    if (!selected && readings.length > 0) {
-      selected = readings[0];
-    }
+      var readings = data.data.readings[0].data;
+      var selected = null;
 
-    if (selected) {
-      document.querySelector('.temp').innerText = '🌡 ' + selected.value + '°C';
-    } else {
-      document.querySelector('.temp').innerText = 'N/A';
-    }
-  })
-  .catch(function (err) {
-    console.error('Error fetching temperature:', err);
-    document.querySelector('.temp').innerText = 'Error';
-  });
+      for (var i = 0; i < readings.length; i++) {
+        if (readings[i].stationId === 'S109') {
+          selected = readings[i];
+          break;
+        }
+      }
+
+      if (!selected && readings.length > 0) {
+        selected = readings[0];
+      }
+
+      if (selected) {
+        document.querySelector('.temp').innerText = selected.value + '°C';
+      } else {
+        document.querySelector('.temp').innerText = 'N/A';
+      }
+    })
+    .catch(function (err) {
+      console.error('Error fetching air temperature:', err);
+      document.querySelector('.temp').innerText = 'Error';
+    });
+}
+
+// Call once at page load
+updateWeather();
+
+// Optionally call every hour (3600000 ms)
+setInterval(updateWeather, 3600000);
 </script>
 </body>
 </html>
