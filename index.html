@@ -459,11 +459,7 @@ setInterval(() => {
 updateWeather();
 setInterval(updateWeather, 3600000);
 setInterval(() => {
-  fetchBusArrival('65459', [
-    { serviceNo: '34', classPrefix: 'bus34-65459' },
-    { serviceNo: '382W', classPrefix: 'bus382-65459' },
-    { serviceNo: '382G', classPrefix: 'bus382-65459' }
-  ]);
+busStops.forEach(stop => fetchBusArrival(stop.stopCode, stop.services));
 }, 60000);
 
 setInterval(() => {
