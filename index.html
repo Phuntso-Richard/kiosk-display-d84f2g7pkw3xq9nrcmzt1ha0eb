@@ -104,7 +104,7 @@
     <div class="field weather"></div>
     <div class="field thermo">🌡</div>
     <div class="field pm25"></div>
-    <div class="field uv">UV Index: 6</div>
+    <div class="field uv"></div>
     <div class="field rainfall"></div>
     <div class="field wind"></div>
     <div class="field weather-emoji"></div>
@@ -259,6 +259,7 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/rainfall')
     document.querySelector('.rainfall').innerText = 'Error';
   });
 
+// --- Fetch Wind ---
 Promise.all([
   fetch('https://api-open.data.gov.sg/v2/real-time/api/wind-speed').then(res => res.json()),
   fetch('https://api-open.data.gov.sg/v2/real-time/api/wind-direction').then(res => res.json())
@@ -286,6 +287,21 @@ Promise.all([
   console.error('Wind error:', err);
   document.querySelector('.wind').innerText = 'Error';
 });
+
+// --- Fetch UV index ---
+fetch('https://api-open.data.gov.sg/v2/real-time/api/uv')
+  .then(res => res.json())
+  .then(data => {
+    const indexList = data?.data?.records?.[0]?.index || [];
+    const latest = indexList[0]; // Always sorted descending by hour
+
+    const value = latest?.value;
+    document.querySelector('.uv').innerText = 'UV: ' + (value !== undefined ? value : 'N/A');
+  })
+  .catch(err => {
+    console.error('UV error:', err);
+    document.querySelector('.uv').innerText = 'UV: Error';
+  });
   
 updateWeather();
 setInterval(updateWeather, 3600000);
