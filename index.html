@@ -147,18 +147,18 @@
     <div class="bus-time bus382-65451-2"></div>
     <div class="bus-time bus382-65451-3"></div>
     
-    <div class="bus-eta bus34-65459-1-eta">(1000s)</div>
-    <div class="bus-eta bus34-65459-2-eta">(1000s)</div>
-    <div class="bus-eta bus34-65459-3-eta">(1000s)</div>
-    <div class="bus-eta bus382-65459-1-eta">(1000s)</div>
-    <div class="bus-eta bus382-65459-2-eta">(1000s)</div>
-    <div class="bus-eta bus382-65459-3-eta">(1000s)</div>
-    <div class="bus-eta bus34-65451-1-eta">(1000s)</div>
-    <div class="bus-eta bus34-65451-2-eta">(1000s)</div>
-    <div class="bus-eta bus34-65451-3-eta">(1000s)</div>
-    <div class="bus-eta bus382-65451-1-eta">(1000s)</div>
-    <div class="bus-eta bus382-65451-2-eta">(1000s)</div>
-    <div class="bus-eta bus382-65451-3-eta">(1000s)</div>
+    <div class="bus-eta bus34-65459-1-eta"></div>
+    <div class="bus-eta bus34-65459-2-eta"></div>
+    <div class="bus-eta bus34-65459-3-eta"></div>
+    <div class="bus-eta bus382-65459-1-eta"></div>
+    <div class="bus-eta bus382-65459-2-eta"></div>
+    <div class="bus-eta bus382-65459-3-eta"></div>
+    <div class="bus-eta bus34-65451-1-eta"></div>
+    <div class="bus-eta bus34-65451-2-eta"></div>
+    <div class="bus-eta bus34-65451-3-eta"></div>
+    <div class="bus-eta bus382-65451-1-eta"></div>
+    <div class="bus-eta bus382-65451-2-eta"></div>
+    <div class="bus-eta bus382-65451-3-eta"></div>
   </div>
 
   
@@ -207,6 +207,54 @@ function getWeatherEmoji(forecast) {
 function degToCompass(deg) {
   const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   return dirs[Math.round(deg / 22.5) % 16];
+}
+
+const etaTimestamps = {};  // To track all countdown targets
+
+function fetchBusArrival(busStopCode, serviceNosWithSuffixes) {
+  fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
+    .then(res => res.json())
+    .then(data => {
+      serviceNosWithSuffixes.forEach(({ classPrefix }) => {
+        const times = data[classPrefix] || ['', '', ''];
+
+        times.forEach((timeStr, index) => {
+          const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
+          const etaField = document.querySelector(`.${classPrefix}-${index + 1}-eta`);
+
+          if (timeStr) {
+            timeField.innerText = timeStr;
+
+            // Compute timestamp for countdown
+            const [hh, mm, ss] = timeStr.split(':').map(Number);
+            const now = new Date();
+            const eta = new Date(now);
+            eta.setHours(hh, mm, ss, 0);
+
+            // If ETA is in the past (e.g., crossed midnight), push it forward a day
+            if (eta < now) eta.setDate(eta.getDate() + 1);
+
+            // Save timestamp
+            const key = `${classPrefix}-${index + 1}`;
+            etaTimestamps[key] = eta;
+
+          } else {
+            timeField.innerText = '';
+            if (etaField) etaField.innerText = '';
+          }
+        });
+      });
+    })
+    .catch(err => {
+      console.error('Bus fetch error:', err);
+      serviceNosWithSuffixes.forEach(({ classPrefix }) => {
+        for (let i = 1; i <= 3; i++) {
+          document.querySelector(`.${classPrefix}-${i}`).innerText = '';
+          const etaField = document.querySelector(`.${classPrefix}-${i}-eta`);
+          if (etaField) etaField.innerText = '';
+        }
+      });
+    });
 }
   
 function updateWeather() {
@@ -402,6 +450,15 @@ setInterval(() => {
     { serviceNo: '382G', classPrefix: 'bus382-65459' }
   ]);
 }, 60000);
+
+  setInterval(() => {
+  const now = new Date();
+  for (const [key, eta] of Object.entries(etaTimestamps)) {
+    const diffSec = Math.max(0, Math.round((eta - now) / 1000));
+    const field = document.querySelector(`.${key}-eta`);
+    if (field) field.innerText = `(${diffSec}s)`;
+  }
+}, 1000);
 </script>
 </body>
 </html>
