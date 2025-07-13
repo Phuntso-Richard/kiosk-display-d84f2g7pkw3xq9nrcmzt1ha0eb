@@ -461,9 +461,7 @@ setInterval(() => {
     { serviceNo: '382W', classPrefix: 'bus382-65459' },
     { serviceNo: '382G', classPrefix: 'bus382-65459' }
   ]);
-  function resetWeatherProgress() {
-  weatherStart = Date.now();
-}
+resetBusProgress();
 }, 60000);
 
 setInterval(() => {
@@ -475,11 +473,17 @@ setInterval(() => {
       field.innerText = diffSec > 40000 ? '0s' : `(${diffSec}s)`;
     }
   }
-  function resetBusProgress() {
-  busStart = Date.now();
-  }
+  resetWeatherProgress();
 }, 1000);
 
+function resetBusProgress() {
+  busStart = Date.now();
+  }
+
+  function resetWeatherProgress() {
+  weatherStart = Date.now();
+}
+  
   let busStart = Date.now();
 let weatherStart = Date.now();
 
@@ -495,7 +499,7 @@ function updateProgressBars() {
   document.getElementById('weather-progress').style.width = weatherPercent + '%';
 }
 
-setInterval(updateProgressBars, 100); // update every 100ms for smoothness
+setInterval(updateProgressBars, 1000); // update every 100ms for smoothness
 </script>
 </body>
 </html>
