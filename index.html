@@ -108,12 +108,12 @@
     <div class="field rainfall"></div>
     <div class="field wind"></div>
     <div class="field weather-emoji"></div>
-    <div class="bus-time bus34-65459-1">34-65459-1</div>
-    <div class="bus-time bus34-65459-2">34-65459-2</div>
-    <div class="bus-time bus34-65459-3">34-65459-3</div>
-    <div class="bus-time bus382-65459-1">382-65459-1</div>
-    <div class="bus-time bus382-65459-2">382-65459-2</div>
-    <div class="bus-time bus382-65459-3">382-65459-3</div>
+    <div class="bus-time bus34-65459-1"></div>
+    <div class="bus-time bus34-65459-2"></div>
+    <div class="bus-time bus34-65459-3"></div>
+    <div class="bus-time bus382-65459-1"></div>
+    <div class="bus-time bus382-65459-2"></div>
+    <div class="bus-time bus382-65459-3"></div>
     <div class="bus-time bus34-65451-1">34-65451-1</div>
     <div class="bus-time bus34-65451-2">34-65451-2</div>
     <div class="bus-time bus34-65451-3">34-65451-3</div>
@@ -302,9 +302,71 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/uv')
     console.error('UV error:', err);
     document.querySelector('.uv').innerText = 'UV: Error';
   });
+
+const LTA_API_KEY = 'dxuWELxUS0ChwytRtPVvLQ=='; // Replace with your actual key
+
+function fetchBusArrival(busStopCode, serviceNosWithSuffixes) {
+  fetch(`https://datamall2.mytransport.sg/ltaodataservice/v3/BusArrival?BusStopCode=${busStopCode}`, {
+    headers: {
+      'AccountKey': LTA_API_KEY,
+      'accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    const services = data.Services || [];
+    serviceNosWithSuffixes.forEach(({ serviceNo, classPrefix }) => {
+      const match = services.find(s => s.ServiceNo === serviceNo);
+      if (!match) {
+        // No such bus found at the moment — clear fields
+        for (let i = 1; i <= 3; i++) {
+          document.querySelector(`.${classPrefix}-${i}`).innerText = '';
+        }
+        return;
+      }
+
+      const busTimes = [match.NextBus, match.NextBus2, match.NextBus3];
+
+      busTimes.forEach((bus, index) => {
+        const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
+        if (!bus || !bus.EstimatedArrival) {
+          timeField.innerText = '';
+        } else {
+          const arrivalTime = new Date(bus.EstimatedArrival);
+          const now = new Date();
+          const diffMinutes = Math.max(0, Math.round((arrivalTime - now) / 60000));
+          timeField.innerText = diffMinutes === 0 ? 'Arr' : `${diffMinutes} min`;
+        }
+      });
+    });
+  })
+  .catch(err => {
+    console.error('Bus fetch error:', err);
+    serviceNosWithSuffixes.forEach(({ classPrefix }) => {
+      for (let i = 1; i <= 3; i++) {
+        document.querySelector(`.${classPrefix}-${i}`).innerText = '';
+      }
+    });
+  });
+}
+
+// Example usage (for bus stop 65459)
+fetchBusArrival('65459', [
+  { serviceNo: '34', classPrefix: 'bus34-65459' },
+  { serviceNo: '382W', classPrefix: 'bus382-65459' },
+  { serviceNo: '382G', classPrefix: 'bus382-65459' }
+]);
+
   
 updateWeather();
 setInterval(updateWeather, 3600000);
+setInterval(() => {
+  fetchBusArrival('65459', [
+    { serviceNo: '34', classPrefix: 'bus34-65459' },
+    { serviceNo: '382W', classPrefix: 'bus382-65459' },
+    { serviceNo: '382G', classPrefix: 'bus382-65459' }
+  ]);
+}, 60000);
 </script>
 </body>
 </html>
