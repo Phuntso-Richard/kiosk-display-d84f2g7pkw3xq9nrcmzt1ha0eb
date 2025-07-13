@@ -217,7 +217,6 @@ function fetchBusArrival(busStopCode, services) {
     .then(data => {
       services.forEach(({ classPrefix }) => {
         const times = data[classPrefix] || ['', '', ''];
-
         times.forEach((timeStr, index) => {
           const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
           const etaField = document.querySelector(`.${classPrefix}-${index + 1}-eta`);
@@ -228,13 +227,15 @@ function fetchBusArrival(busStopCode, services) {
             return;
           }
 
-          // Parse time and create ETA timestamp
+          // Parse HH:MM:SS
           const [hh, mm, ss] = timeStr.split(':').map(Number);
           const now = new Date();
           const eta = new Date(now);
           eta.setHours(hh, mm, ss, 0);
-          if (eta < now) eta.setDate(eta.getDate() + 1); // Handle next-day arrivals
+          // If ETA is before now, assume next day
+          if (eta < now) eta.setDate(eta.getDate() + 1);
 
+          // Store for countdown
           const key = `${classPrefix}-${index + 1}`;
           etaTimestamps[key] = eta;
         });
@@ -447,12 +448,14 @@ setInterval(() => {
   ]);
 }, 60000);
 
-  setInterval(() => {
+setInterval(() => {
   const now = new Date();
   for (const [key, eta] of Object.entries(etaTimestamps)) {
     const diffSec = Math.max(0, Math.round((eta - now) / 1000));
     const field = document.querySelector(`.${key}-eta`);
-    if (field) field.innerText = `(${diffSec}s)`;
+    if (field) {
+      field.innerText = `(${diffSec}s)`;
+    }
   }
 }, 1000);
 </script>
