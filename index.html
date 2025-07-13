@@ -117,6 +117,26 @@
   text-shadow: 0 0 3px black;
   margin-top: 5px; /* push it below the main time */
 }
+
+.progress-line {
+  position: absolute;
+  height: 2px;
+  left: 0;
+  background: lime;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#bus-progress {
+  bottom: 24px;
+  width: 0%;
+}
+
+#weather-progress {
+  bottom: 21px;
+  width: 0%;
+  background: cyan;
+}
     
   </style>
 </head>
@@ -147,18 +167,21 @@
     <div class="bus-time bus382-65451-2"></div>
     <div class="bus-time bus382-65451-3"></div>
     
-    <div class="bus-eta bus34-65459-1-eta">(1000s)</div>
-    <div class="bus-eta bus34-65459-2-eta">(1000s)</div>
-    <div class="bus-eta bus34-65459-3-eta">(1000s)</div>
-    <div class="bus-eta bus382-65459-1-eta">(1000s)</div>
-    <div class="bus-eta bus382-65459-2-eta">(1000s)</div>
-    <div class="bus-eta bus382-65459-3-eta">(1000s)</div>
-    <div class="bus-eta bus34-65451-1-eta">(1000s)</div>
-    <div class="bus-eta bus34-65451-2-eta">(1000s)</div>
-    <div class="bus-eta bus34-65451-3-eta">(1000s)</div>
-    <div class="bus-eta bus382-65451-1-eta">(1000s)</div>
-    <div class="bus-eta bus382-65451-2-eta">(1000s)</div>
-    <div class="bus-eta bus382-65451-3-eta">(1000s)</div>
+    <div class="bus-eta bus34-65459-1-eta"></div>
+    <div class="bus-eta bus34-65459-2-eta"></div>
+    <div class="bus-eta bus34-65459-3-eta"></div>
+    <div class="bus-eta bus382-65459-1-eta"></div>
+    <div class="bus-eta bus382-65459-2-eta"></div>
+    <div class="bus-eta bus382-65459-3-eta"></div>
+    <div class="bus-eta bus34-65451-1-eta"></div>
+    <div class="bus-eta bus34-65451-2-eta"></div>
+    <div class="bus-eta bus34-65451-3-eta"></div>
+    <div class="bus-eta bus382-65451-1-eta"></div>
+    <div class="bus-eta bus382-65451-2-eta"></div>
+    <div class="bus-eta bus382-65451-3-eta"></div>
+
+    <div id="bus-progress" class="progress-line"></div>
+<div id="weather-progress" class="progress-line"></div>
   </div>
 
   
@@ -208,6 +231,8 @@ function degToCompass(deg) {
   const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   return dirs[Math.round(deg / 22.5) % 16];
 }
+
+const etaTimestamps = {};  // To track all countdown targets
   
 function updateWeather() {
   // --- Fetch air temperature ---
@@ -262,7 +287,6 @@ function updateWeather() {
       document.querySelector('.weather').innerText = 'Error';
       document.querySelector('.weather-emoji').innerText = '❌';
     });
-
   // --- Fetch PM2.5 ---
 fetch('https://api-open.data.gov.sg/v2/real-time/api/pm25')
   .then(res => res.json())
@@ -340,21 +364,53 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/uv')
     console.error('UV error:', err);
     document.querySelector('.uv').innerText = 'UV: Error';
   });
+resetWeatherProgress();
 }
 
 
-
+  
 const LTA_PROXY_URL = 'https://script.google.com/macros/s/AKfycbzpw4S_ZKkNElI5k0seQcheRBot5vs8J6lQEKoGXJT_T3uGixSSYfvkGaBGfMAX-S8F1g/exec'; // <-- Replace with your deployed URL
-
 function fetchBusArrival(busStopCode, services) {
   fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
     .then(res => res.json())
     .then(data => {
       services.forEach(({ classPrefix }) => {
         const times = data[classPrefix] || ['', '', ''];
-        times.forEach((time, idx) => {
-          const el = document.querySelector(`.${classPrefix}-${idx + 1}`);
-          if (el) el.innerText = time || '';
+        times.forEach((timeStr, index) => {
+          const key = `${classPrefix}-${index + 1}`;
+          const timeField = document.querySelector(`.${key}`);
+          const etaField = document.querySelector(`.${key}-eta`);
+
+          // Update timeField only if changed
+          if (timeField && timeField.innerText !== (timeStr || '')) {
+            timeField.innerText = timeStr || '';
+          }
+
+          if (!timeStr) {
+            // Clear etaField and remove old ETA timestamp if no timeStr
+            if (etaField && etaField.innerText !== '') {
+              etaField.innerText = '';
+            }
+            delete etaTimestamps[key];
+            return;
+          }
+
+          // Parse HH:MM:SS from timeStr
+          const [hh, mm, ss] = timeStr.split(':').map(Number);
+          const now = new Date();
+          const eta = new Date(now);
+          eta.setHours(hh, mm, ss, 0);
+          if (eta < now) eta.setDate(eta.getDate() + 1);
+
+          // Store ETA for countdown only if changed or missing
+          if (!etaTimestamps[key] || etaTimestamps[key].getTime() !== eta.getTime()) {
+            etaTimestamps[key] = eta;
+          }
+
+          // Initialize ETA field to empty if needed (countdown updates it)
+          if (etaField && etaField.innerText !== '') {
+            etaField.innerText = '';
+          }
         });
       });
     })
@@ -362,8 +418,12 @@ function fetchBusArrival(busStopCode, services) {
       console.error('Bus fetch error:', err);
       services.forEach(({ classPrefix }) => {
         for (let i = 1; i <= 3; i++) {
-          const el = document.querySelector(`.${classPrefix}-${i}`);
-          if (el) el.innerText = '';
+          const key = `${classPrefix}-${i}`;
+          const el = document.querySelector(`.${key}`);
+          if (el && el.innerText !== '') el.innerText = '';
+          const etaEl = document.querySelector(`.${key}-eta`);
+          if (etaEl && etaEl.innerText !== '') etaEl.innerText = '';
+          delete etaTimestamps[key];
         }
       });
     });
@@ -392,18 +452,51 @@ busStops.forEach(stop => fetchBusArrival(stop.stopCode, stop.services));
 // Update every 60 seconds
 setInterval(() => {
   busStops.forEach(stop => fetchBusArrival(stop.stopCode, stop.services));
+  resetBusProgress();
 }, 60000);
 
   
 updateWeather();
 setInterval(updateWeather, 3600000);
 setInterval(() => {
-  fetchBusArrival('65459', [
-    { serviceNo: '34', classPrefix: 'bus34-65459' },
-    { serviceNo: '382W', classPrefix: 'bus382-65459' },
-    { serviceNo: '382G', classPrefix: 'bus382-65459' }
-  ]);
+busStops.forEach(stop => fetchBusArrival(stop.stopCode, stop.services));
 }, 60000);
+
+setInterval(() => {
+  const now = new Date();
+  for (const [key, eta] of Object.entries(etaTimestamps)) {
+    const diffSec = Math.max(0, Math.round((eta - now) / 1000));
+    const field = document.querySelector(`.${key}-eta`);
+    if (field) {
+      field.innerText = diffSec > 40000 ? '0s' : `(${diffSec}s)`;
+    }
+  }
+}, 1000);
+
+function resetBusProgress() {
+  busStart = Date.now();
+  }
+
+  function resetWeatherProgress() {
+  weatherStart = Date.now();
+}
+  
+  let busStart = Date.now();
+let weatherStart = Date.now();
+
+function updateProgressBars() {
+  const now = Date.now();
+  const busElapsed = now - busStart;
+  const weatherElapsed = now - weatherStart;
+
+  const busPercent = Math.min(100, (busElapsed / 60000) * 100);
+  const weatherPercent = Math.min(100, (weatherElapsed / 3600000) * 100);
+
+  document.getElementById('bus-progress').style.width = busPercent + '%';
+  document.getElementById('weather-progress').style.width = weatherPercent + '%';
+}
+
+setInterval(updateProgressBars, 1000); // update every 100ms for smoothness
 </script>
 </body>
 </html>
