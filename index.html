@@ -126,10 +126,17 @@ function updateWeather() {
 fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
   .then(res => res.json())
   .then(data => {
-    var forecasts = data?.data?.items?.[0]?.forecasts || [];
-    var selected = forecasts.find(f => f.area === 'Punggol') || forecasts[0];
-    var rawForecast = selected?.forecast || 'N/A';
-    var cleaned = rawForecast.replace(' with Gusty Winds', '').trim();
+    const items = data?.data?.items;
+    if (!items || items.length === 0) {
+      document.querySelector('.weather').innerText = 'Unavailable';
+      document.querySelector('.weather-emoji').innerText = '📡';
+      return;
+    }
+
+    const forecasts = items[0]?.forecasts || [];
+    const selected = forecasts.find(f => f.area === 'Punggol') || forecasts[0];
+    const rawForecast = selected?.forecast || 'N/A';
+    const cleaned = rawForecast.replace(' with Gusty Winds', '').trim();
 
     document.querySelector('.weather').innerText = cleaned;
     document.querySelector('.weather-emoji').innerText = getWeatherEmoji(rawForecast);
@@ -139,7 +146,6 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
     document.querySelector('.weather').innerText = 'Error';
     document.querySelector('.weather-emoji').innerText = '❌';
   });
-}
 
 function getWeatherEmoji(forecast) {
   const cleaned = forecast.replace(' with Gusty Winds', '').trim();
@@ -169,7 +175,7 @@ function getWeatherEmoji(forecast) {
     'Heavy Thundery Showers': '⛈️'
   };
 
-  return emojiMap[cleaned] || '❓';
+  return emojiMap[cleaned] || '';
 }
   
 // Call once at page load
