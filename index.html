@@ -81,7 +81,7 @@
     <div class="field pm25"></div>
     <div class="field uv">UV Index: 6</div>
     <div class="field rainfall"></div>
-    <div class="field wind">Wind: NE 15 km/h</div>
+    <div class="field wind"></div>
     <div class="field weather-emoji"></div>
   </div>
 
@@ -127,6 +127,11 @@ function getWeatherEmoji(forecast) {
   return emojiMap[forecast] || '';
 }
 
+function degToCompass(deg) {
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+  
 function updateWeather() {
   // --- Fetch air temperature ---
   fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
@@ -215,6 +220,34 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/rainfall')
     console.error('Rainfall error:', err);
     document.querySelector('.rainfall').innerText = 'Error';
   });
+
+Promise.all([
+  fetch('https://api-open.data.gov.sg/v2/real-time/api/wind-speed').then(res => res.json()),
+  fetch('https://api-open.data.gov.sg/v2/real-time/api/wind-direction').then(res => res.json())
+])
+.then(([speedData, dirData]) => {
+  const speedReadings = speedData?.data?.readings?.[0]?.data || [];
+  const dirReadings = dirData?.data?.readings?.[0]?.data || [];
+
+  const speedSelected = speedReadings.find(r => r.stationId === 'S109') || speedReadings[0];
+  const dirSelected = dirReadings.find(r => r.stationId === 'S109') || dirReadings[0];
+
+  const speedKnots = speedSelected?.value;
+  const speedKmh = speedKnots !== undefined ? (speedKnots * 1.852).toFixed(1) : null;
+
+  const angle = dirSelected?.value;
+  const direction = angle !== undefined ? degToCompass(angle) : null;
+
+  const display = (speedKmh && direction)
+    ? `${direction} ${speedKmh} km/h`
+    : 'N/A';
+
+  document.querySelector('.wind').innerText = 'Wind: ' + display;
+})
+.catch(err => {
+  console.error('Wind error:', err);
+  document.querySelector('.wind').innerText = 'Error';
+});
   
 updateWeather();
 setInterval(updateWeather, 3600000);
