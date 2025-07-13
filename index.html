@@ -303,59 +303,76 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/uv')
     document.querySelector('.uv').innerText = 'UV: Error';
   });
 
-const LTA_API_KEY = 'dxuWELxUS0ChwytRtPVvLQ=='; // Replace with your actual key
+const LTA_PROXY_URL = 'https://script.google.com/macros/s/AKfycbyF_qck6x7SoGZv_fQyCvb9XMPNjZbAqVbcA3PaHod3wPOXWdWKwGpEmtLcR-rXK9XZPA/exec'; // <-- Replace with your deployed URL
 
 function fetchBusArrival(busStopCode, serviceNosWithSuffixes) {
-  fetch(`https://datamall2.mytransport.sg/ltaodataservice/v3/BusArrival?BusStopCode=${busStopCode}`, {
-    headers: {
-      'AccountKey': LTA_API_KEY,
-      'accept': 'application/json'
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    const services = data.Services || [];
-    serviceNosWithSuffixes.forEach(({ serviceNo, classPrefix }) => {
-      const match = services.find(s => s.ServiceNo === serviceNo);
-      if (!match) {
-        // No such bus found at the moment — clear fields
+  fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
+    .then(res => res.json())
+    .then(data => {
+      const services = data.Services || [];
+      serviceNosWithSuffixes.forEach(({ serviceNo, classPrefix }) => {
+        const match = services.find(s => s.ServiceNo === serviceNo);
+        if (!match) {
+          for (let i = 1; i <= 3; i++) {
+            document.querySelector(`.${classPrefix}-${i}`).innerText = '';
+          }
+          return;
+        }
+
+        const busTimes = [match.NextBus, match.NextBus2, match.NextBus3];
+
+        busTimes.forEach((bus, index) => {
+          const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
+          if (!bus || !bus.EstimatedArrival) {
+            timeField.innerText = '';
+          } else {
+            const arrivalTime = new Date(bus.EstimatedArrival);
+            const now = new Date();
+            const diffMinutes = Math.max(0, Math.round((arrivalTime - now) / 60000));
+            timeField.innerText = diffMinutes === 0 ? 'Arr' : `${diffMinutes} min`;
+          }
+        });
+      });
+    })
+    .catch(err => {
+      console.error('Bus fetch error:', err);
+      serviceNosWithSuffixes.forEach(({ classPrefix }) => {
         for (let i = 1; i <= 3; i++) {
           document.querySelector(`.${classPrefix}-${i}`).innerText = '';
         }
-        return;
-      }
-
-      const busTimes = [match.NextBus, match.NextBus2, match.NextBus3];
-
-      busTimes.forEach((bus, index) => {
-        const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
-        if (!bus || !bus.EstimatedArrival) {
-          timeField.innerText = '';
-        } else {
-          const arrivalTime = new Date(bus.EstimatedArrival);
-          const now = new Date();
-          const diffMinutes = Math.max(0, Math.round((arrivalTime - now) / 60000));
-          timeField.innerText = diffMinutes === 0 ? 'Arr' : `${diffMinutes} min`;
-        }
       });
     });
-  })
-  .catch(err => {
-    console.error('Bus fetch error:', err);
-    serviceNosWithSuffixes.forEach(({ classPrefix }) => {
-      for (let i = 1; i <= 3; i++) {
-        document.querySelector(`.${classPrefix}-${i}`).innerText = '';
-      }
-    });
-  });
 }
 
-// Example usage (for bus stop 65459)
-fetchBusArrival('65459', [
-  { serviceNo: '34', classPrefix: 'bus34-65459' },
-  { serviceNo: '382W', classPrefix: 'bus382-65459' },
-  { serviceNo: '382G', classPrefix: 'bus382-65459' }
-]);
+// Initial and interval fetch
+const busStops = [
+  {
+    stopCode: '65459',
+    services: [
+      { serviceNo: '34', classPrefix: 'bus34-65459' },
+      { serviceNo: '382W', classPrefix: 'bus382-65459' },
+      { serviceNo: '382G', classPrefix: 'bus382-65459' }
+    ]
+  },
+  {
+    stopCode: '65451',
+    services: [
+      { serviceNo: '34', classPrefix: 'bus34-65451' },
+      { serviceNo: '382W', classPrefix: 'bus382-65451' },
+      { serviceNo: '382G', classPrefix: 'bus382-65451' }
+    ]
+  }
+];
+
+busStops.forEach(stop =>
+  fetchBusArrival(stop.stopCode, stop.services)
+);
+
+setInterval(() => {
+  busStops.forEach(stop =>
+    fetchBusArrival(stop.stopCode, stop.services)
+  );
+}, 60000);
 
   
 updateWeather();
