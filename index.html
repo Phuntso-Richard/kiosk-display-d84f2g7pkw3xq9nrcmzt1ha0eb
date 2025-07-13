@@ -73,7 +73,7 @@
     <div class="field humidity"></div>
     <div class="field weather"></div>
     <div class="field thermo">🌡</div>
-    <div class="field pm25">PM<sub>2.5</sub>: 19 µg/m³</div>
+    <div class="field pm25"></div>
     <div class="field uv">UV Index: 6</div>
     <div class="field rainfall">Rainfall: 0 mm</div>
     <div class="field wind">Wind: NE 15 km/h</div>
@@ -158,7 +158,7 @@ function updateWeather() {
       const items = data?.data?.items;
       if (!items || items.length === 0) {
         document.querySelector('.weather').innerText = 'Unavailable';
-        document.querySelector('.weather-emoji').innerText = '📡';
+        document.querySelector('.weather-emoji').innerText = '';
         return;
       }
 
@@ -177,6 +177,24 @@ function updateWeather() {
     });
 }
 
+// --- Fetch PM2.5 ---
+fetch('https://api-open.data.gov.sg/v2/real-time/api/pm25')
+  .then(res => res.json())
+  .then(data => {
+    const pm25Readings = data?.data?.items?.[0]?.readings?.pm25_one_hourly || {};
+    let value = pm25Readings['north'];
+    if (value === undefined) {
+      // pick first available region value if north not found
+      const firstKey = Object.keys(pm25Readings)[0];
+      value = pm25Readings[firstKey];
+    }
+    document.querySelector('.pm25').innerHTML = 'PM<sub>2.5</sub>: ' + (value !== undefined ? value : 'N/A') + ' µg/m³';
+  })
+  .catch(err => {
+    console.error('PM2.5 error:', err);
+    document.querySelector('.pm25').innerText = 'Error';
+  });
+  
 updateWeather();
 setInterval(updateWeather, 3600000);
 </script>
