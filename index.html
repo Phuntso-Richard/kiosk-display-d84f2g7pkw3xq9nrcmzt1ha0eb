@@ -138,9 +138,24 @@
   background: cyan;
 }
     
+#scale-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: black;
+}
+.wrapper {
+  transform-origin: top left;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+    
   </style>
 </head>
 <body>
+  <div id="scale-container">
   <div class="wrapper">
     <img src="bg.png" alt="Weather Background" id="bg-image">
 
@@ -183,7 +198,7 @@
     <div id="bus-progress" class="progress-line"></div>
 <div id="weather-progress" class="progress-line"></div>
   </div>
-
+</div>
   
 <script>
 let busStart = Date.now();
@@ -497,6 +512,24 @@ function updateProgressBars() {
 }
 
 setInterval(updateProgressBars, 1000); // update every 100ms for smoothness
+
+function scaleToFit() {
+  const baseWidth = 1133;
+  const baseHeight = 744;
+  const scaleX = window.innerWidth / baseWidth;
+  const scaleY = window.innerHeight / baseHeight;
+  const scale = Math.min(scaleX, scaleY);
+
+  const wrapper = document.querySelector('.wrapper');
+  wrapper.style.transform = `scale(${scale})`;
+
+  // Center horizontally/vertically
+  wrapper.style.left = `${(window.innerWidth - baseWidth * scale) / 2}px`;
+  wrapper.style.top = `${(window.innerHeight - baseHeight * scale) / 2}px`;
+}
+
+window.addEventListener('resize', scaleToFit);
+window.addEventListener('load', scaleToFit);
 </script>
 </body>
 </html>
