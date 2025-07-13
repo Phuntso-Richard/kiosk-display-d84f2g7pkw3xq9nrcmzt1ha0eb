@@ -303,7 +303,7 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/uv')
     document.querySelector('.uv').innerText = 'UV: Error';
   });
 
-const LTA_PROXY_URL = 'https://script.google.com/macros/s/AKfycbyF_qck6x7SoGZv_fQyCvb9XMPNjZbAqVbcA3PaHod3wPOXWdWKwGpEmtLcR-rXK9XZPA/exec'; // <-- Replace with your deployed URL
+const LTA_PROXY_URL = 'https://script.google.com/macros/s/AKfycbzpw4S_ZKkNElI5k0seQcheRBot5vs8J6lQEKoGXJT_T3uGixSSYfvkGaBGfMAX-S8F1g/exec'; // <-- Replace with your deployed URL
 
 function fetchBusArrival(busStopCode, serviceNosWithSuffixes) {
   fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
