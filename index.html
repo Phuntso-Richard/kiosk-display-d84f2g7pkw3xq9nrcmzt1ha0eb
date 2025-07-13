@@ -376,7 +376,7 @@ function fetchBusArrival(busStopCode, services) {
           etaTimestamps[key] = eta;
 
           // Optionally, clear or initialize ETA text here, countdown interval will update it
-          if (etaField) etaField.innerText = '(...)';
+          if (etaField) etaField.innerText = '';
         });
       });
     })
