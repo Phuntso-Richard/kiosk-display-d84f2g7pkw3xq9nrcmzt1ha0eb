@@ -146,6 +146,12 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
     document.querySelector('.weather').innerText = 'Error';
     document.querySelector('.weather-emoji').innerText = '❌';
   });
+  
+// Call once at page load
+updateWeather();
+
+// Optionally call every hour (3600000 ms)
+setInterval(updateWeather, 3600000);
 
 function getWeatherEmoji(forecast) {
   const cleaned = forecast.replace(' with Gusty Winds', '').trim();
@@ -177,12 +183,6 @@ function getWeatherEmoji(forecast) {
 
   return emojiMap[cleaned] || '';
 }
-  
-// Call once at page load
-updateWeather();
-
-// Optionally call every hour (3600000 ms)
-setInterval(updateWeather, 3600000);
 </script>
 </body>
 </html>
