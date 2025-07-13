@@ -446,7 +446,7 @@ setInterval(() => {
     const diffSec = Math.max(0, Math.round((eta - now) / 1000));
     const field = document.querySelector(`.${key}-eta`);
     if (field) {
-      field.innerText = `(${diffSec}s)`;
+      field.innerText = diffSec > 40000 ? '0s' : `(${diffSec}s)`;
     }
   }
 }, 1000);
