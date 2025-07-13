@@ -211,47 +211,43 @@ function degToCompass(deg) {
 
 const etaTimestamps = {};  // To track all countdown targets
 
-function fetchBusArrival(busStopCode, serviceNosWithSuffixes) {
+function fetchBusArrival(busStopCode, services) {
   fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
     .then(res => res.json())
     .then(data => {
-      serviceNosWithSuffixes.forEach(({ classPrefix }) => {
+      services.forEach(({ classPrefix }) => {
         const times = data[classPrefix] || ['', '', ''];
 
         times.forEach((timeStr, index) => {
           const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
           const etaField = document.querySelector(`.${classPrefix}-${index + 1}-eta`);
 
-          if (timeStr) {
-            timeField.innerText = timeStr;
-
-            // Compute timestamp for countdown
-            const [hh, mm, ss] = timeStr.split(':').map(Number);
-            const now = new Date();
-            const eta = new Date(now);
-            eta.setHours(hh, mm, ss, 0);
-
-            // If ETA is in the past (e.g., crossed midnight), push it forward a day
-            if (eta < now) eta.setDate(eta.getDate() + 1);
-
-            // Save timestamp
-            const key = `${classPrefix}-${index + 1}`;
-            etaTimestamps[key] = eta;
-
-          } else {
-            timeField.innerText = '';
+          if (timeField) timeField.innerText = timeStr || '';
+          if (!timeStr) {
             if (etaField) etaField.innerText = '';
+            return;
           }
+
+          // Parse time and create ETA timestamp
+          const [hh, mm, ss] = timeStr.split(':').map(Number);
+          const now = new Date();
+          const eta = new Date(now);
+          eta.setHours(hh, mm, ss, 0);
+          if (eta < now) eta.setDate(eta.getDate() + 1); // Handle next-day arrivals
+
+          const key = `${classPrefix}-${index + 1}`;
+          etaTimestamps[key] = eta;
         });
       });
     })
     .catch(err => {
       console.error('Bus fetch error:', err);
-      serviceNosWithSuffixes.forEach(({ classPrefix }) => {
+      services.forEach(({ classPrefix }) => {
         for (let i = 1; i <= 3; i++) {
-          document.querySelector(`.${classPrefix}-${i}`).innerText = '';
-          const etaField = document.querySelector(`.${classPrefix}-${i}-eta`);
-          if (etaField) etaField.innerText = '';
+          const el = document.querySelector(`.${classPrefix}-${i}`);
+          if (el) el.innerText = '';
+          const etaEl = document.querySelector(`.${classPrefix}-${i}-eta`);
+          if (etaEl) etaEl.innerText = '';
         }
       });
     });
