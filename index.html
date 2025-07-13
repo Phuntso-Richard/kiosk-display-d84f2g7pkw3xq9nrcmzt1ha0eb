@@ -473,6 +473,8 @@ setInterval(() => {
   }
 }, 1000);
 
+let busStart = Date.now();
+let weatherStart = Date.now(); 
 function resetBusProgress() {
   busStart = Date.now();
   }
@@ -480,9 +482,6 @@ function resetBusProgress() {
   function resetWeatherProgress() {
   weatherStart = Date.now();
 }
-  
-  let busStart = Date.now();
-let weatherStart = Date.now();
 
 function updateProgressBars() {
   const now = Date.now();
