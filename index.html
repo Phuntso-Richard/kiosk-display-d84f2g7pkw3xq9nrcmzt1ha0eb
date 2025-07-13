@@ -83,7 +83,7 @@
 <script>
 function formatDateTime(date) {
   const pad = n => n.toString().padStart(2, '0');
-  const day = pad(date.getDate()), month = pad(date.getMonth()+1), year = date.getFullYear();
+  const day = pad(date.getDate()), month = pad(date.getMonth() + 1), year = date.getFullYear();
   const hour = pad(date.getHours()), min = pad(date.getMinutes()), sec = pad(date.getSeconds());
   return `${day}/${month}/${year} ${hour}:${min}:${sec}`;
 }
@@ -94,68 +94,7 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-// 🔁 This function handles all weather fetching (air temp for now)
-function updateWeather() {
-  // --- Fetch air temperature ---
-  fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
-    .then(res => res.json())
-    .then(data => {
-      var readings = data?.data?.readings?.[0]?.data || [];
-      var selected = readings.find(r => r.stationId === 'S109') || readings[0];
-      document.querySelector('.temp').innerText = selected?.value + '°C' || 'N/A';
-    })
-    .catch(err => {
-      console.error('Air temp error:', err);
-      document.querySelector('.temp').innerText = 'Error';
-    });
-
-  // --- Fetch relative humidity ---
-  fetch('https://api-open.data.gov.sg/v2/real-time/api/relative-humidity')
-    .then(res => res.json())
-    .then(data => {
-      var readings = data?.data?.readings?.[0]?.data || [];
-      var selected = readings.find(r => r.stationId === 'S109') || readings[0];
-      document.querySelector('.humidity').innerText = '💧 ' + selected?.value + '%' || 'N/A';
-    })
-    .catch(err => {
-      console.error('Humidity error:', err);
-      document.querySelector('.humidity').innerText = 'Error';
-    });
-
-  // --- Fetch weather forecast ---
-fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
-  .then(res => res.json())
-  .then(data => {
-    const items = data?.data?.items;
-    if (!items || items.length === 0) {
-      document.querySelector('.weather').innerText = 'Unavailable';
-      document.querySelector('.weather-emoji').innerText = '📡';
-      return;
-    }
-
-    const forecasts = items[0]?.forecasts || [];
-    const selected = forecasts.find(f => f.area === 'Punggol') || forecasts[0];
-    const rawForecast = selected?.forecast || 'N/A';
-    const cleaned = rawForecast.replace(' with Gusty Winds', '').trim();
-
-    document.querySelector('.weather').innerText = cleaned;
-    document.querySelector('.weather-emoji').innerText = getWeatherEmoji(rawForecast);
-  })
-  .catch(err => {
-    console.error('Forecast error:', err);
-    document.querySelector('.weather').innerText = 'Error';
-    document.querySelector('.weather-emoji').innerText = '❌';
-  });
-  
-// Call once at page load
-updateWeather();
-
-// Optionally call every hour (3600000 ms)
-setInterval(updateWeather, 3600000);
-
 function getWeatherEmoji(forecast) {
-  const cleaned = forecast.replace(' with Gusty Winds', '').trim();
-
   const emojiMap = {
     'Fair': '🌤️',
     'Fair (Day)': '☀️',
@@ -180,9 +119,66 @@ function getWeatherEmoji(forecast) {
     'Thundery Showers': '⛈️',
     'Heavy Thundery Showers': '⛈️'
   };
-
-  return emojiMap[cleaned] || '';
+  return emojiMap[forecast] || '';
 }
+
+function updateWeather() {
+  // --- Fetch air temperature ---
+  fetch('https://api-open.data.gov.sg/v2/real-time/api/air-temperature')
+    .then(res => res.json())
+    .then(data => {
+      const readings = data?.data?.readings?.[0]?.data || [];
+      const selected = readings.find(r => r.stationId === 'S109') || readings[0];
+      const tempText = selected?.value !== undefined ? selected.value + '°C' : 'N/A';
+      document.querySelector('.temp').innerText = tempText;
+    })
+    .catch(err => {
+      console.error('Air temp error:', err);
+      document.querySelector('.temp').innerText = 'Error';
+    });
+
+  // --- Fetch relative humidity ---
+  fetch('https://api-open.data.gov.sg/v2/real-time/api/relative-humidity')
+    .then(res => res.json())
+    .then(data => {
+      const readings = data?.data?.readings?.[0]?.data || [];
+      const selected = readings.find(r => r.stationId === 'S109') || readings[0];
+      const humidityText = selected?.value !== undefined ? `💧 ${selected.value}%` : 'N/A';
+      document.querySelector('.humidity').innerText = humidityText;
+    })
+    .catch(err => {
+      console.error('Humidity error:', err);
+      document.querySelector('.humidity').innerText = 'Error';
+    });
+
+  // --- Fetch weather forecast ---
+  fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast')
+    .then(res => res.json())
+    .then(data => {
+      const items = data?.data?.items;
+      if (!items || items.length === 0) {
+        document.querySelector('.weather').innerText = 'Unavailable';
+        document.querySelector('.weather-emoji').innerText = '📡';
+        return;
+      }
+
+      const forecasts = items[0]?.forecasts || [];
+      const selected = forecasts.find(f => f.area === 'Punggol') || forecasts[0];
+      const rawForecast = selected?.forecast || 'N/A';
+      const cleaned = rawForecast.replace(' with Gusty Winds', '').trim();
+
+      document.querySelector('.weather').innerText = cleaned;
+      document.querySelector('.weather-emoji').innerText = getWeatherEmoji(cleaned);
+    })
+    .catch(err => {
+      console.error('Forecast error:', err);
+      document.querySelector('.weather').innerText = 'Error';
+      document.querySelector('.weather-emoji').innerText = '❌';
+    });
+}
+
+updateWeather();
+setInterval(updateWeather, 3600000);
 </script>
 </body>
 </html>
