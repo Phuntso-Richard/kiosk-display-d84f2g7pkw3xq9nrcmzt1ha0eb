@@ -287,9 +287,7 @@ function updateWeather() {
       document.querySelector('.weather').innerText = 'Error';
       document.querySelector('.weather-emoji').innerText = '❌';
     });
-}
-
-// --- Fetch PM2.5 ---
+  // --- Fetch PM2.5 ---
 fetch('https://api-open.data.gov.sg/v2/real-time/api/pm25')
   .then(res => res.json())
   .then(data => {
@@ -366,7 +364,11 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/uv')
     console.error('UV error:', err);
     document.querySelector('.uv').innerText = 'UV: Error';
   });
+resetWeatherProgress();
+}
 
+
+  
 const LTA_PROXY_URL = 'https://script.google.com/macros/s/AKfycbzpw4S_ZKkNElI5k0seQcheRBot5vs8J6lQEKoGXJT_T3uGixSSYfvkGaBGfMAX-S8F1g/exec'; // <-- Replace with your deployed URL
 function fetchBusArrival(busStopCode, services) {
   fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
@@ -450,6 +452,7 @@ busStops.forEach(stop => fetchBusArrival(stop.stopCode, stop.services));
 // Update every 60 seconds
 setInterval(() => {
   busStops.forEach(stop => fetchBusArrival(stop.stopCode, stop.services));
+  resetBusProgress();
 }, 60000);
 
   
@@ -461,7 +464,6 @@ setInterval(() => {
     { serviceNo: '382W', classPrefix: 'bus382-65459' },
     { serviceNo: '382G', classPrefix: 'bus382-65459' }
   ]);
-resetBusProgress();
 }, 60000);
 
 setInterval(() => {
@@ -473,7 +475,6 @@ setInterval(() => {
       field.innerText = diffSec > 40000 ? '0s' : `(${diffSec}s)`;
     }
   }
-  resetWeatherProgress();
 }, 1000);
 
 function resetBusProgress() {
