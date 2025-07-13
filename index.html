@@ -210,49 +210,6 @@ function degToCompass(deg) {
 }
 
 const etaTimestamps = {};  // To track all countdown targets
-
-function fetchBusArrival(busStopCode, services) {
-  fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
-    .then(res => res.json())
-    .then(data => {
-      services.forEach(({ classPrefix }) => {
-        const times = data[classPrefix] || ['', '', ''];
-        times.forEach((timeStr, index) => {
-          const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
-          const etaField = document.querySelector(`.${classPrefix}-${index + 1}-eta`);
-
-          if (timeField) timeField.innerText = timeStr || '';
-          if (!timeStr) {
-            if (etaField) etaField.innerText = '';
-            return;
-          }
-
-          // Parse HH:MM:SS
-          const [hh, mm, ss] = timeStr.split(':').map(Number);
-          const now = new Date();
-          const eta = new Date(now);
-          eta.setHours(hh, mm, ss, 0);
-          // If ETA is before now, assume next day
-          if (eta < now) eta.setDate(eta.getDate() + 1);
-
-          // Store for countdown
-          const key = `${classPrefix}-${index + 1}`;
-          etaTimestamps[key] = eta;
-        });
-      });
-    })
-    .catch(err => {
-      console.error('Bus fetch error:', err);
-      services.forEach(({ classPrefix }) => {
-        for (let i = 1; i <= 3; i++) {
-          const el = document.querySelector(`.${classPrefix}-${i}`);
-          if (el) el.innerText = '';
-          const etaEl = document.querySelector(`.${classPrefix}-${i}-eta`);
-          if (etaEl) etaEl.innerText = '';
-        }
-      });
-    });
-}
   
 function updateWeather() {
   // --- Fetch air temperature ---
@@ -388,16 +345,38 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/uv')
   });
 
 const LTA_PROXY_URL = 'https://script.google.com/macros/s/AKfycbzpw4S_ZKkNElI5k0seQcheRBot5vs8J6lQEKoGXJT_T3uGixSSYfvkGaBGfMAX-S8F1g/exec'; // <-- Replace with your deployed URL
-
 function fetchBusArrival(busStopCode, services) {
   fetch(`${LTA_PROXY_URL}?busStopCode=${busStopCode}`)
     .then(res => res.json())
     .then(data => {
       services.forEach(({ classPrefix }) => {
         const times = data[classPrefix] || ['', '', ''];
-        times.forEach((time, idx) => {
-          const el = document.querySelector(`.${classPrefix}-${idx + 1}`);
-          if (el) el.innerText = time || '';
+        times.forEach((timeStr, index) => {
+          const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
+          const etaField = document.querySelector(`.${classPrefix}-${index + 1}-eta`);
+
+          if (timeField) timeField.innerText = timeStr || '';
+          if (!timeStr) {
+            if (etaField) etaField.innerText = '';
+            // Remove any old timestamp
+            delete etaTimestamps[`${classPrefix}-${index + 1}`];
+            return;
+          }
+
+          // Parse HH:MM:SS from timeStr
+          const [hh, mm, ss] = timeStr.split(':').map(Number);
+          const now = new Date();
+          const eta = new Date(now);
+          eta.setHours(hh, mm, ss, 0);
+          // If ETA is earlier than now, it means the time is next day
+          if (eta < now) eta.setDate(eta.getDate() + 1);
+
+          // Store ETA for countdown
+          const key = `${classPrefix}-${index + 1}`;
+          etaTimestamps[key] = eta;
+
+          // Optionally, clear or initialize ETA text here, countdown interval will update it
+          if (etaField) etaField.innerText = '(...)';
         });
       });
     })
@@ -407,6 +386,10 @@ function fetchBusArrival(busStopCode, services) {
         for (let i = 1; i <= 3; i++) {
           const el = document.querySelector(`.${classPrefix}-${i}`);
           if (el) el.innerText = '';
+          const etaEl = document.querySelector(`.${classPrefix}-${i}-eta`);
+          if (etaEl) etaEl.innerText = '';
+          // Remove from etaTimestamps as well
+          delete etaTimestamps[`${classPrefix}-${i}`];
         }
       });
     });
