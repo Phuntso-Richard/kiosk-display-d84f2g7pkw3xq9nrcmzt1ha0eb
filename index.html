@@ -117,6 +117,26 @@
   text-shadow: 0 0 3px black;
   margin-top: 5px; /* push it below the main time */
 }
+
+.progress-line {
+  position: absolute;
+  height: 1px;
+  left: 0;
+  background: lime;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#bus-progress {
+  bottom: 2px;
+  width: 0%;
+}
+
+#weather-progress {
+  bottom: 0px;
+  width: 0%;
+  background: cyan;
+}
     
   </style>
 </head>
@@ -159,6 +179,9 @@
     <div class="bus-eta bus382-65451-1-eta"></div>
     <div class="bus-eta bus382-65451-2-eta"></div>
     <div class="bus-eta bus382-65451-3-eta"></div>
+
+    <div id="bus-progress" class="progress-line"></div>
+<div id="weather-progress" class="progress-line"></div>
   </div>
 
   
@@ -438,6 +461,9 @@ setInterval(() => {
     { serviceNo: '382W', classPrefix: 'bus382-65459' },
     { serviceNo: '382G', classPrefix: 'bus382-65459' }
   ]);
+  function resetWeatherProgress() {
+  weatherStart = Date.now();
+}
 }, 60000);
 
 setInterval(() => {
@@ -449,7 +475,27 @@ setInterval(() => {
       field.innerText = diffSec > 40000 ? '0s' : `(${diffSec}s)`;
     }
   }
+  function resetBusProgress() {
+  busStart = Date.now();
+  }
 }, 1000);
+
+  let busStart = Date.now();
+let weatherStart = Date.now();
+
+function updateProgressBars() {
+  const now = Date.now();
+  const busElapsed = now - busStart;
+  const weatherElapsed = now - weatherStart;
+
+  const busPercent = Math.min(100, (busElapsed / 60000) * 100);
+  const weatherPercent = Math.min(100, (weatherElapsed / 3600000) * 100);
+
+  document.getElementById('bus-progress').style.width = busPercent + '%';
+  document.getElementById('weather-progress').style.width = weatherPercent + '%';
+}
+
+setInterval(updateProgressBars, 100); // update every 100ms for smoothness
 </script>
 </body>
 </html>
