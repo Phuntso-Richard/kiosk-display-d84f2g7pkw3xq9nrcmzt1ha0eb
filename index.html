@@ -80,7 +80,7 @@
     <div class="field thermo">🌡</div>
     <div class="field pm25"></div>
     <div class="field uv">UV Index: 6</div>
-    <div class="field rainfall">Rainfall: 0 mm</div>
+    <div class="field rainfall"></div>
     <div class="field wind">Wind: NE 15 km/h</div>
     <div class="field weather-emoji"></div>
   </div>
@@ -198,6 +198,22 @@ fetch('https://api-open.data.gov.sg/v2/real-time/api/pm25')
   .catch(err => {
     console.error('PM2.5 error:', err);
     document.querySelector('.pm25').innerText = 'Error';
+  });
+
+// --- Fetch rainfall ---
+fetch('https://api-open.data.gov.sg/v2/real-time/api/rainfall')
+  .then(res => res.json())
+  .then(data => {
+    const readings = data?.data?.readings?.[0]?.data || [];
+    const selected = readings.find(r => r.stationId === 'S109') || readings[0];
+    const value = selected?.value;
+
+    // Display rainfall with unit mm, or N/A if missing
+    document.querySelector('.rainfall').innerText = 'Rainfall: ' + (value !== undefined ? value : 'N/A') + ' mm';
+  })
+  .catch(err => {
+    console.error('Rainfall error:', err);
+    document.querySelector('.rainfall').innerText = 'Error';
   });
   
 updateWeather();
