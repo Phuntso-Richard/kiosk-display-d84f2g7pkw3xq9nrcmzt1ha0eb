@@ -352,14 +352,21 @@ function fetchBusArrival(busStopCode, services) {
       services.forEach(({ classPrefix }) => {
         const times = data[classPrefix] || ['', '', ''];
         times.forEach((timeStr, index) => {
-          const timeField = document.querySelector(`.${classPrefix}-${index + 1}`);
-          const etaField = document.querySelector(`.${classPrefix}-${index + 1}-eta`);
+          const key = `${classPrefix}-${index + 1}`;
+          const timeField = document.querySelector(`.${key}`);
+          const etaField = document.querySelector(`.${key}-eta`);
 
-          if (timeField) timeField.innerText = timeStr || '';
+          // Update timeField only if changed
+          if (timeField && timeField.innerText !== (timeStr || '')) {
+            timeField.innerText = timeStr || '';
+          }
+
           if (!timeStr) {
-            if (etaField) etaField.innerText = '';
-            // Remove any old timestamp
-            delete etaTimestamps[`${classPrefix}-${index + 1}`];
+            // Clear etaField and remove old ETA timestamp if no timeStr
+            if (etaField && etaField.innerText !== '') {
+              etaField.innerText = '';
+            }
+            delete etaTimestamps[key];
             return;
           }
 
@@ -368,15 +375,17 @@ function fetchBusArrival(busStopCode, services) {
           const now = new Date();
           const eta = new Date(now);
           eta.setHours(hh, mm, ss, 0);
-          // If ETA is earlier than now, it means the time is next day
           if (eta < now) eta.setDate(eta.getDate() + 1);
 
-          // Store ETA for countdown
-          const key = `${classPrefix}-${index + 1}`;
-          etaTimestamps[key] = eta;
+          // Store ETA for countdown only if changed or missing
+          if (!etaTimestamps[key] || etaTimestamps[key].getTime() !== eta.getTime()) {
+            etaTimestamps[key] = eta;
+          }
 
-          // Optionally, clear or initialize ETA text here, countdown interval will update it
-          if (etaField) etaField.innerText = '';
+          // Initialize ETA field to empty if needed (countdown updates it)
+          if (etaField && etaField.innerText !== '') {
+            etaField.innerText = '';
+          }
         });
       });
     })
@@ -384,12 +393,12 @@ function fetchBusArrival(busStopCode, services) {
       console.error('Bus fetch error:', err);
       services.forEach(({ classPrefix }) => {
         for (let i = 1; i <= 3; i++) {
-          const el = document.querySelector(`.${classPrefix}-${i}`);
-          if (el) el.innerText = '';
-          const etaEl = document.querySelector(`.${classPrefix}-${i}-eta`);
-          if (etaEl) etaEl.innerText = '';
-          // Remove from etaTimestamps as well
-          delete etaTimestamps[`${classPrefix}-${i}`];
+          const key = `${classPrefix}-${i}`;
+          const el = document.querySelector(`.${key}`);
+          if (el && el.innerText !== '') el.innerText = '';
+          const etaEl = document.querySelector(`.${key}-eta`);
+          if (etaEl && etaEl.innerText !== '') etaEl.innerText = '';
+          delete etaTimestamps[key];
         }
       });
     });
