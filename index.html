@@ -31,8 +31,8 @@
 
 .wrapper {
   position: relative;
-  width: 2500px;
-  height: 1253px;
+  width: 2340px;
+  height: 1080px;
   transform-origin: top left;
   transform: scale(var(--scale, 1));
 }
@@ -56,8 +56,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 2500px;
-  height: 1253px;
+  width: 2240px;
+  height: 1080px;
   z-index: -1;
 }
     
@@ -539,8 +539,8 @@ function updateProgressBars() {
 setInterval(updateProgressBars, 1000); // update every 100ms for smoothness
 
 function scaleToFit() {
-  const scaleX = window.innerWidth / 2500;
-  const scaleY = window.innerHeight / 1253;
+  const scaleX = window.innerWidth / 2340;
+  const scaleY = window.innerHeight / 1080;
   const scale = Math.min(scaleX, scaleY); // fit inside window
   document.documentElement.style.setProperty('--scale', scale);
 }
