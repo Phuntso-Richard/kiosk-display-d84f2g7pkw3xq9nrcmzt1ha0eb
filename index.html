@@ -20,11 +20,22 @@
       align-items: center;
     }
 
-    .wrapper {
-      position: relative;
-      width: 2500px;
-      height: 1253px;
-    }
+#scale-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.wrapper {
+  position: relative;
+  width: 2500px;
+  height: 1253px;
+  transform-origin: top left;
+  transform: scale(var(--scale, 1));
+}
        
     .wrapper img {
       width: 100%;
@@ -41,6 +52,15 @@
       /* outline: 1px dashed lime; */ /* Use this to debug placement */
     }
 
+#bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2500px;
+  height: 1253px;
+  z-index: -1;
+}
+    
   .pm25 sub {
     font-size: 50%;
     vertical-align: sub;
@@ -519,22 +539,14 @@ function updateProgressBars() {
 setInterval(updateProgressBars, 1000); // update every 100ms for smoothness
 
 function scaleToFit() {
-  const baseWidth = 1133;
-  const baseHeight = 744;
-  const scaleX = window.innerWidth / baseWidth;
-  const scaleY = window.innerHeight / baseHeight;
-  const scale = Math.min(scaleX, scaleY);
-
-  const wrapper = document.querySelector('.wrapper');
-  wrapper.style.transform = `scale(${scale})`;
-
-  // Center horizontally/vertically
-  wrapper.style.left = `${(window.innerWidth - baseWidth * scale) / 2}px`;
-  wrapper.style.top = `${(window.innerHeight - baseHeight * scale) / 2}px`;
+  const scaleX = window.innerWidth / 2500;
+  const scaleY = window.innerHeight / 1253;
+  const scale = Math.min(scaleX, scaleY); // fit inside window
+  document.documentElement.style.setProperty('--scale', scale);
 }
 
 window.addEventListener('resize', scaleToFit);
-window.addEventListener('load', scaleToFit);
+window.addEventListener('DOMContentLoaded', scaleToFit);
 
     document.getElementById("fullscreenBtn").addEventListener("click", function () {
       document.documentElement.requestFullscreen();
