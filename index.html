@@ -47,7 +47,7 @@
       position: absolute;
       color: white;
       font-family: Arial, sans-serif;
-      font-size: 33px;
+      font-size: 40px;
       text-shadow: 0 0 5px black;
       /* outline: 1px dashed lime; */ /* Use this to debug placement */
     }
@@ -80,7 +80,7 @@
 .weather-emoji {
   top: 40px;            /* Adjust Y position as needed */
   left: 70px;         /* Adjust X position as needed */
-  font-size: 150px;      /* Make it big */
+  font-size: 200px;      /* Make it big */
   position: absolute;
   font-family: Arial, sans-serif;
   text-shadow: 0 0 5px black;
@@ -93,20 +93,20 @@
   text-align: center;
   color: white;
   font-family: Arial, sans-serif;
-  font-size: 28px;
+  font-size: 35px;
   text-shadow: 0 0 5px black;
 }
 
 /* Bus Stop 65451 */
-.bus34-65451-1 { top: 309px; left: 235px; }
+.bus34-65451-1 { top: 574px; left: 508px; }
 .bus34-65451-2 { top: 309px; left: 438px; }
 .bus34-65451-3 { top: 309px; left: 641px; }
 .bus382-65451-1 { top: 365px; left: 235px; }
-.bus382-65451-2 { top: 365px; left: 438px; }
+.bus382-65451-2 { top: 671px; left: 900px; }
 .bus382-65451-3 { top: 365px; left: 641px; }
 
 /* Bus Stop 65459 */
-.bus34-65459-1 { top: 493px; left: 235px; }
+.bus34-65459-1 { top: 893px; left: 508px; }
 .bus34-65459-2 { top: 493px; left: 438px; }
 .bus34-65459-3 { top: 493px; left: 641px; }
 .bus382-65459-1 { top: 549px; left: 235px; }
@@ -148,12 +148,12 @@
 }
 
 #bus-progress {
-  bottom: 21px;
+  bottom: 10px;
   width: 0%;
 }
 
 #weather-progress {
-  bottom: 205px;
+  bottom: 400px;
   width: 0%;
   background: cyan;
 }
@@ -552,19 +552,25 @@ window.addEventListener('DOMContentLoaded', scaleToFit);
       document.documentElement.requestFullscreen();
     });
 
-  const btn = document.getElementById("fullscreenBtn");
-  btn.addEventListener("click", () => {
-    document.body.requestFullscreen().then(() => {
-      btn.style.display = "none";
-    });
-  });
+const btn = document.getElementById("fullscreenBtn");
 
-    // Optional: Listen for fullscreen exit and show the button again (optional)
-    document.addEventListener("fullscreenchange", () => {
-      if (!document.fullscreenElement) {
-        btn.style.display = "block"; // Show button again if user exits fullscreen
-      }
+btn.addEventListener("click", () => {
+  // Use document.documentElement for full-page fullscreen
+  document.documentElement.requestFullscreen()
+    .then(() => {
+      btn.style.display = "none"; // Hide button after going fullscreen
+    })
+    .catch((err) => {
+      console.error("Failed to enter fullscreen:", err);
     });
+});
+
+// Optional: Show the button again if fullscreen is exited (e.g. with ESC)
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    btn.style.display = "block";
+  }
+});
 </script>
 </body>
 </html>
