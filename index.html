@@ -12,8 +12,8 @@
       margin: 0;
       padding: 0;
       background: black;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       display: flex;
       justify-content: center;
@@ -25,7 +25,7 @@
       width: 1250px;
       height: 626px;
     }
-
+       
     .wrapper img {
       width: 100%;
       height: 100%;
@@ -540,13 +540,12 @@ window.addEventListener('load', scaleToFit);
       document.documentElement.requestFullscreen();
     });
 
-     const btn = document.getElementById("fullscreenBtn");
-
-    btn.addEventListener("click", () => {
-      document.documentElement.requestFullscreen().then(() => {
-        btn.style.display = "none"; // Hide after entering fullscreen
-      });
+  const btn = document.getElementById("fullscreenBtn");
+  btn.addEventListener("click", () => {
+    document.body.requestFullscreen().then(() => {
+      btn.style.display = "none";
     });
+  });
 
     // Optional: Listen for fullscreen exit and show the button again (optional)
     document.addEventListener("fullscreenchange", () => {
