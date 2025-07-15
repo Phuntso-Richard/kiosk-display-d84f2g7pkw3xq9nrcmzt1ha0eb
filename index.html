@@ -52,7 +52,7 @@
     .weather    { top: 111px; left: 758px; }
     .uv         { top: 157px; left: 758px; }
     .wind       { top: 203px; left: 758px; }
-    .temp       { top: 64px; left: 432px; }
+    .temp       { top: 64px; left: 435px; }
     .humidity   { top: 107px; left: 388px; }
     .pm25       { top: 157px; left: 388px; }
     .rainfall   { top: 203px; left: 388px; }
@@ -151,10 +151,15 @@
   top: 0;
   left: 0;
 }
-    
+   
   </style>
 </head>
 <body>
+
+  <button id="fullscreenBtn" style="position: fixed; top: 10px; right: 10px; z-index: 9999;">
+  🖥️ Fullscreen
+</button>
+  
   <div id="scale-container">
   <div class="wrapper">
     <img src="bg.png" alt="Weather Background" id="bg-image">
@@ -530,6 +535,10 @@ function scaleToFit() {
 
 window.addEventListener('resize', scaleToFit);
 window.addEventListener('load', scaleToFit);
+
+    document.getElementById("fullscreenBtn").addEventListener("click", function () {
+      document.documentElement.requestFullscreen();
+    });
 </script>
 </body>
 </html>
