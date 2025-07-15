@@ -539,6 +539,21 @@ window.addEventListener('load', scaleToFit);
     document.getElementById("fullscreenBtn").addEventListener("click", function () {
       document.documentElement.requestFullscreen();
     });
+
+     const btn = document.getElementById("fullscreenBtn");
+
+    btn.addEventListener("click", () => {
+      document.documentElement.requestFullscreen().then(() => {
+        btn.style.display = "none"; // Hide after entering fullscreen
+      });
+    });
+
+    // Optional: Listen for fullscreen exit and show the button again (optional)
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) {
+        btn.style.display = "block"; // Show button again if user exits fullscreen
+      }
+    });
 </script>
 </body>
 </html>
